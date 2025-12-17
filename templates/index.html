@@ -255,12 +255,123 @@
         .summary-value { font-weight: 600; }
         .summary-value.positive { color: #2ecc71; }
         .summary-value.negative { color: #e74c3c; }
+        
+        /* Tabla Calendario General */
+        #tabla-general th, #tabla-general td {
+            padding: 6px 3px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            vertical-align: middle;
+        }
+        #tabla-general th {
+            background: rgba(78,205,196,0.15);
+            color: #4ecdc4;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        #tabla-general th.dia-header {
+            min-width: 70px;
+            font-size: 0.8rem;
+        }
+        #tabla-general td.prop-name {
+            text-align: left;
+            padding: 12px 15px;
+            font-weight: 700;
+            background: rgba(0,0,0,0.3);
+            white-space: nowrap;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            color: #4ecdc4;
+            font-size: 0.9rem;
+        }
+        #tabla-general td.dia-cell {
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 60px;
+            font-size: 0.7rem;
+            line-height: 1.2;
+        }
+        #tabla-general td[colspan] {
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        #tabla-general td.dia-cell:hover {
+            box-shadow: inset 0 0 0 2px #fff;
+        }
+        #tabla-general td.libre { 
+            background: rgba(0,0,0,0.3);
+            border: 2px dashed rgba(46,204,113,0.4) !important;
+            color: rgba(46,204,113,0.6);
+            cursor: pointer;
+        }
+        #tabla-general td.libre:hover {
+            background: rgba(46,204,113,0.15);
+            border-color: rgba(46,204,113,0.8) !important;
+        }
+        #tabla-general td.libre.selected {
+            background: rgba(46,204,113,0.3);
+            border-color: #2ecc71 !important;
+            box-shadow: inset 0 0 0 2px #2ecc71;
+        }
+        #tabla-general td.ocupado-dueño { 
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: #fff;
+            font-weight: 600;
+        }
+        #tabla-general td.ocupado-alicia { 
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            color: #fff;
+            font-weight: 600;
+        }
+        #tabla-general td.ocupado-estanislao { 
+            background: linear-gradient(135deg, #f39c12, #f1c40f);
+            color: #000;
+            font-weight: 600;
+        }
+        #tabla-general td.ocupado { 
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: #fff;
+            font-weight: 600;
+        }
+        .celda-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+        .celda-origen { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
+        .celda-inquilino { font-size: 0.6rem; opacity: 0.9; max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .celda-libre { font-size: 0.7rem; opacity: 0.7; }
+        
+        .celda-info-merged {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 4px;
+        }
+        .merged-inquilino {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .merged-detalle {
+            font-size: 0.65rem;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div class="logo">🏠 Miami</div>
         <div class="nav-item active" onclick="showSection('dashboard')">📊 Dashboard</div>
+        <div class="nav-item" onclick="showSection('calendario-general')">🗓️ Vista General</div>
         <div class="nav-item" onclick="showSection('ocupacion')">📅 Ocupación</div>
         <div class="nav-item" onclick="showSection('gastos')">💰 Gastos</div>
         <div class="nav-item" onclick="showSection('reportes')">📈 Reportes</div>
@@ -350,47 +461,60 @@
             </div>
         </div>
         
-        <!-- Ocupación -->
+        <!-- Calendario General -->
+        <div id="calendario-general" class="section">
+            <div class="header">
+                <h1>🗓️ Vista General - Cargar Departamentos</h1>
+            </div>
+            
+            <div class="calendar" style="overflow-x: auto;">
+                <div class="help-text" style="margin-bottom:15px">
+                    💡 <strong>Tip:</strong> Hacé click en las celdas LIBRE para cargar ocupación. Seleccioná varias celdas y después "Cargar selección"
+                </div>
+                
+                <div class="calendar-header">
+                    <button class="calendar-nav-btn" onclick="changeMonthGeneral(-1)">◀ Anterior</button>
+                    <h2 id="calendar-month-general">Diciembre 2025</h2>
+                    <button class="calendar-nav-btn" onclick="changeMonthGeneral(1)">Siguiente ▶</button>
+                </div>
+                
+                <div class="legend" style="margin-bottom:20px">
+                    <div class="legend-item"><div class="legend-color" style="background:#1a1a2e;border:2px dashed rgba(46,204,113,0.5)"></div><span>LIBRE (click para cargar)</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:linear-gradient(135deg,#27ae60,#2ecc71)"></div><span>Dueño</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:linear-gradient(135deg,#8e44ad,#9b59b6)"></div><span>Alicia</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:linear-gradient(135deg,#f39c12,#f1c40f)"></div><span>Estanislao</span></div>
+                </div>
+                
+                <table id="tabla-general" style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+                    <thead id="tabla-general-header"></thead>
+                    <tbody id="tabla-general-body"></tbody>
+                </table>
+                
+                <div class="selection-bar" id="selection-bar-general" style="display:none">
+                    <span><span class="count" id="selected-count-general">0</span> celdas seleccionadas</span>
+                    <div class="actions">
+                        <button class="btn btn-secondary" onclick="clearSelectionGeneral()">Cancelar</button>
+                        <button class="btn btn-primary" onclick="openMultiModalGeneral()">Cargar selección</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ocupación (solo mensuales: Brickell y Locales) -->
         <div id="ocupacion" class="section">
             <div class="header">
-                <h1>📅 Cargar Ocupación</h1>
+                <h1>🏢 Alquileres Mensuales</h1>
+                <p style="color:#8892b0;margin-top:5px">Brickell, Local 1 y Local 2</p>
             </div>
             
             <div class="calendar-container">
                 <div class="property-list">
                     <h3 style="margin-bottom:15px;color:#4ecdc4">Propiedades</h3>
-                    <div id="property-list"></div>
-                </div>
-                
-                <!-- Calendario para TIDES (temporarios) -->
-                <div class="calendar" id="calendar-temporario">
-                    <div class="help-text" style="margin-bottom:15px">
-                        💡 <strong>Tip:</strong> Hacé click en varios días para seleccionarlos, después "Cargar selección"
-                    </div>
-                    <div class="calendar-header">
-                        <button class="calendar-nav-btn" onclick="changeMonth(-1)">◀ Anterior</button>
-                        <h2 id="calendar-month">Diciembre 2025</h2>
-                        <button class="calendar-nav-btn" onclick="changeMonth(1)">Siguiente ▶</button>
-                    </div>
-                    <div class="calendar-grid" id="calendar-grid"></div>
-                    
-                    <div class="selection-bar" id="selection-bar">
-                        <span><span class="count" id="selected-count">0</span> días seleccionados</span>
-                        <div class="actions">
-                            <button class="btn btn-secondary" onclick="clearSelection()">Cancelar</button>
-                            <button class="btn btn-primary" onclick="openMultiModal()">Cargar selección</button>
-                        </div>
-                    </div>
-                    
-                    <div class="legend">
-                        <div class="legend-item"><div class="legend-color" style="background:rgba(46,204,113,0.5)"></div><span>Dueño</span></div>
-                        <div class="legend-item"><div class="legend-color" style="background:rgba(155,89,182,0.5)"></div><span>Alicia</span></div>
-                        <div class="legend-item"><div class="legend-color" style="background:rgba(241,196,15,0.5)"></div><span>Estanislao</span></div>
-                    </div>
+                    <div id="property-list-mensual"></div>
                 </div>
                 
                 <!-- Formulario para Brickell/Locales (mensuales) -->
-                <div class="calendar" id="calendar-mensual" style="display:none">
+                <div class="calendar" id="calendar-mensual">
                     <div class="help-text" style="margin-bottom:20px">
                         🏢 <strong>Alquiler Mensual:</strong> Cargá el monto cobrado por cada mes
                     </div>
@@ -786,6 +910,41 @@
         </div>
     </div>
     
+    <!-- Modal Cargar desde Vista General -->
+    <div class="modal" id="multi-general-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📅 Cargar Ocupación</h3>
+                <button class="modal-close" onclick="closeModal('multi-general-modal')">&times;</button>
+            </div>
+            
+            <div class="help-text" style="margin-bottom:15px" id="multi-resumen">
+                Resumen de la selección
+            </div>
+            
+            <form id="multi-general-form" onsubmit="event.preventDefault(); submitMultiGeneral();">
+                <div class="form-group">
+                    <label>¿Quién lo alquiló?</label>
+                    <div class="origen-selector">
+                        <button type="button" class="origen-btn dueño" data-origen="Dueño" onclick="selectMultiOrigen(this)">👤<br>Dueño</button>
+                        <button type="button" class="origen-btn alicia" data-origen="Alicia" onclick="selectMultiOrigen(this)">👩<br>Alicia</button>
+                        <button type="button" class="origen-btn estanislao" data-origen="Estanislao" onclick="selectMultiOrigen(this)">👨<br>Estanislao</button>
+                    </div>
+                    <input type="hidden" id="multi-origen">
+                </div>
+                <div class="form-group">
+                    <label>Precio por noche (USD)</label>
+                    <input type="number" id="multi-precio" min="0" step="0.01" required placeholder="Ej: 150">
+                </div>
+                <div class="form-group">
+                    <label>Nombre del inquilino</label>
+                    <input type="text" id="multi-notas" placeholder="Ej: Sergio las Heras">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">✅ Guardar</button>
+            </form>
+        </div>
+    </div>
+    
     <div class="toast" id="toast"></div>
     
     <script>
@@ -820,9 +979,11 @@
             const res = await fetch('/api/propiedades');
             propiedades = await res.json();
             
-            document.getElementById('property-list').innerHTML = propiedades.map(p => `
-                <div class="property-item" data-id="${p.id}" onclick="selectProperty(${p.id})">
-                    ${p.tipo === 'local' ? '🏪' : '🏠'} ${p.nombre}
+            // Solo mensuales en la sección de Ocupación
+            const mensuales = propiedades.filter(p => p.tipo === 'mensual');
+            document.getElementById('property-list-mensual').innerHTML = mensuales.map(p => `
+                <div class="property-item" data-id="${p.id}" onclick="selectPropertyMensual(${p.id})">
+                    🏢 ${p.nombre}
                 </div>
             `).join('');
             
@@ -837,30 +998,23 @@
                 }
             });
             
-            if (propiedades.length > 0) selectProperty(propiedades[0].id);
+            // Seleccionar la primera propiedad mensual
+            if (mensuales.length > 0) selectPropertyMensual(mensuales[0].id);
         }
         
-        function selectProperty(id) {
+        function selectPropertyMensual(id) {
             selectedProperty = id;
             const prop = propiedades.find(p => p.id === id);
-            selectedPropertyType = prop ? prop.tipo : 'temporario';
+            selectedPropertyType = 'mensual';
             
-            clearSelection();
-            document.querySelectorAll('.property-item').forEach(el => {
+            document.querySelectorAll('#property-list-mensual .property-item').forEach(el => {
                 el.classList.toggle('selected', el.dataset.id == id);
             });
             
-            // Mostrar el formulario correcto según tipo
-            if (selectedPropertyType === 'mensual') {
-                document.getElementById('calendar-temporario').style.display = 'none';
-                document.getElementById('calendar-mensual').style.display = 'block';
-                document.getElementById('mensual-propiedad-nombre').textContent = '🏢 ' + prop.nombre;
-                loadAlquileresMensuales();
-            } else {
-                document.getElementById('calendar-temporario').style.display = 'block';
-                document.getElementById('calendar-mensual').style.display = 'none';
-                loadCalendar();
-            }
+            // Siempre mostrar formulario mensual
+            document.getElementById('calendar-mensual').style.display = 'block';
+            document.getElementById('mensual-propiedad-nombre').textContent = '🏢 ' + prop.nombre;
+            loadAlquileresMensuales();
         }
         
         async function loadCalendar() {
@@ -957,6 +1111,12 @@
             document.querySelectorAll('.origen-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             selectedOrigen = btn.dataset.origen;
+        }
+        
+        function selectMultiOrigen(btn) {
+            document.querySelectorAll('#multi-general-modal .origen-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById('multi-origen').value = btn.dataset.origen;
         }
         
         document.getElementById('ocupacion-form').addEventListener('submit', async (e) => {
@@ -1367,6 +1527,7 @@
             event.target.classList.add('active');
             if (section === 'gastos') loadGastos();
             if (section === 'reportes') loadReportes();
+            if (section === 'calendario-general') loadCalendarioGeneral();
         }
         
         function closeModal(id) { document.getElementById(id).classList.remove('show'); }
@@ -1381,6 +1542,215 @@
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
         });
+        
+        // === CALENDARIO GENERAL ===
+        let generalYear = 2025;
+        let generalMonth = 12;
+        const DEPTOS_TIDES = ['TIDES 14 B', 'TIDES 5 L', 'TIDES 10 L', 'TIDES 10 F', 'TIDES 12 F'];
+        
+        function changeMonthGeneral(delta) {
+            generalMonth += delta;
+            if (generalMonth > 12) { generalMonth = 1; generalYear++; }
+            if (generalMonth < 1) { generalMonth = 12; generalYear--; }
+            clearSelectionGeneral();
+            loadCalendarioGeneral();
+        }
+        
+        // Selección en calendario general
+        let selectedCellsGeneral = [];
+        
+        function toggleSelectGeneral(cell) {
+            const fecha = cell.dataset.fecha;
+            const prop = cell.dataset.prop;
+            const propId = cell.dataset.propid;
+            const key = `${prop}-${fecha}`;
+            
+            const idx = selectedCellsGeneral.findIndex(s => s.key === key);
+            if (idx >= 0) {
+                selectedCellsGeneral.splice(idx, 1);
+                cell.classList.remove('selected');
+            } else {
+                selectedCellsGeneral.push({ key, fecha, prop, propId });
+                cell.classList.add('selected');
+            }
+            updateSelectionBarGeneral();
+        }
+        
+        function updateSelectionBarGeneral() {
+            const bar = document.getElementById('selection-bar-general');
+            const count = document.getElementById('selected-count-general');
+            if (selectedCellsGeneral.length > 0) {
+                bar.style.display = 'flex';
+                count.textContent = selectedCellsGeneral.length;
+            } else {
+                bar.style.display = 'none';
+            }
+        }
+        
+        function clearSelectionGeneral() {
+            selectedCellsGeneral = [];
+            document.querySelectorAll('#tabla-general td.selected').forEach(c => c.classList.remove('selected'));
+            updateSelectionBarGeneral();
+        }
+        
+        function openMultiModalGeneral() {
+            if (selectedCellsGeneral.length === 0) return;
+            
+            // Agrupar por propiedad
+            const grouped = {};
+            selectedCellsGeneral.forEach(s => {
+                if (!grouped[s.prop]) grouped[s.prop] = { propId: s.propId, fechas: [] };
+                grouped[s.prop].fechas.push(s.fecha);
+            });
+            
+            // Mostrar resumen
+            const props = Object.keys(grouped);
+            let resumen = `<strong>Se cargarán ${selectedCellsGeneral.length} días:</strong><br>`;
+            props.forEach(p => {
+                const fechas = grouped[p].fechas.sort();
+                resumen += `• ${p}: ${fechas.length} noches<br>`;
+            });
+            
+            document.getElementById('multi-resumen').innerHTML = resumen;
+            
+            // Limpiar formulario
+            document.getElementById('multi-precio').value = '';
+            document.getElementById('multi-notas').value = '';
+            document.getElementById('multi-origen').value = '';
+            document.querySelectorAll('#multi-general-modal .origen-btn').forEach(b => b.classList.remove('selected'));
+            
+            document.getElementById('multi-general-modal').classList.add('show');
+            
+            // Guardar info para submit
+            window.pendingMultiGeneral = grouped;
+        }
+        
+        async function submitMultiGeneral() {
+            const precio = parseFloat(document.getElementById('multi-precio').value);
+            const origen = document.getElementById('multi-origen').value;
+            const notas = document.getElementById('multi-notas').value;
+            
+            if (!precio || precio <= 0) { showToast('Ingresá un precio válido', 'error'); return; }
+            if (!origen) { showToast('Seleccioná quién alquiló', 'error'); return; }
+            
+            let total = 0;
+            for (const prop of Object.keys(window.pendingMultiGeneral)) {
+                const data = window.pendingMultiGeneral[prop];
+                for (const fecha of data.fechas) {
+                    await fetch('/api/ocupacion', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            propiedad_id: data.propId,
+                            fecha: fecha,
+                            precio: precio,
+                            origen: origen,
+                            notas: notas
+                        })
+                    });
+                    total++;
+                }
+            }
+            
+            document.getElementById('multi-general-modal').classList.remove('show');
+            clearSelectionGeneral();
+            loadCalendarioGeneral();
+            loadAll();
+            showToast(`Se cargaron ${total} noches correctamente`, 'success');
+        }
+        
+        async function loadCalendarioGeneral() {
+            const monthNames = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            document.getElementById('calendar-month-general').textContent = `${monthNames[generalMonth]} ${generalYear}`;
+            
+            // Obtener ocupaciones del mes
+            const res = await fetch(`/api/ocupaciones/${generalYear}/${generalMonth}`);
+            const ocupaciones = await res.json();
+            
+            // Crear mapa de ocupaciones
+            const ocupMap = {};
+            ocupaciones.forEach(o => {
+                const key = `${o.propiedad_nombre}-${o.fecha}`;
+                ocupMap[key] = o;
+            });
+            
+            // Obtener días del mes
+            const diasEnMes = new Date(generalYear, generalMonth, 0).getDate();
+            
+            // Crear header
+            let headerHtml = '<tr><th style="min-width:100px">Propiedad</th>';
+            for (let d = 1; d <= diasEnMes; d++) {
+                const fecha = new Date(generalYear, generalMonth - 1, d);
+                const diaSemana = ['D','L','M','X','J','V','S'][fecha.getDay()];
+                headerHtml += `<th class="dia-header">${d}<br><small>${diaSemana}</small></th>`;
+            }
+            headerHtml += '</tr>';
+            document.getElementById('tabla-general-header').innerHTML = headerHtml;
+            
+            // Crear filas por cada departamento con celdas combinadas
+            let bodyHtml = '';
+            DEPTOS_TIDES.forEach(depto => {
+                const propId = propiedades.find(p => p.nombre === depto)?.id;
+                bodyHtml += `<tr><td class="prop-name">${depto}</td>`;
+                
+                let d = 1;
+                while (d <= diasEnMes) {
+                    const fechaStr = `${generalYear}-${String(generalMonth).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                    const key = `${depto}-${fechaStr}`;
+                    const ocup = ocupMap[key];
+                    
+                    if (!ocup) {
+                        // Celda libre - clickeable
+                        bodyHtml += `<td class="dia-cell libre" data-fecha="${fechaStr}" data-prop="${depto}" data-propid="${propId}" onclick="toggleSelectGeneral(this)" title="Click para cargar"><span style="font-size:0.65rem;font-weight:600">LIBRE</span></td>`;
+                        d++;
+                    } else {
+                        // Celda ocupada - buscar cuántos días seguidos tiene el mismo inquilino
+                        const inquilinoActual = ocup.notas || '';
+                        const origenActual = ocup.origen || '';
+                        let colspan = 1;
+                        let precioTotal = ocup.precio || 0;
+                        
+                        // Buscar días consecutivos con mismo inquilino y origen
+                        for (let siguiente = d + 1; siguiente <= diasEnMes; siguiente++) {
+                            const fechaSig = `${generalYear}-${String(generalMonth).padStart(2,'0')}-${String(siguiente).padStart(2,'0')}`;
+                            const keySig = `${depto}-${fechaSig}`;
+                            const ocupSig = ocupMap[keySig];
+                            
+                            if (ocupSig && ocupSig.notas === inquilinoActual && ocupSig.origen === origenActual) {
+                                colspan++;
+                                precioTotal += ocupSig.precio || 0;
+                            } else {
+                                break;
+                            }
+                        }
+                        
+                        const origenLower = origenActual.toLowerCase();
+                        let clase = 'dia-cell ocupado';
+                        let origenTexto = origenActual.toUpperCase();
+                        
+                        if (origenLower === 'dueño') {
+                            clase = 'dia-cell ocupado-dueño';
+                        } else if (origenLower === 'alicia') {
+                            clase = 'dia-cell ocupado-alicia';
+                        } else if (origenLower === 'estanislao') {
+                            clase = 'dia-cell ocupado-estanislao';
+                        }
+                        
+                        const titulo = `${origenActual}: ${inquilinoActual || 'Sin nombre'} - $${precioTotal} (${colspan} noches)`;
+                        const contenido = `<div class="celda-info-merged">
+                            <span class="merged-inquilino">${inquilinoActual || origenTexto}</span>
+                            <span class="merged-detalle">${origenTexto} · ${colspan}n · $${precioTotal}</span>
+                        </div>`;
+                        
+                        bodyHtml += `<td class="${clase}" colspan="${colspan}" title="${titulo}">${contenido}</td>`;
+                        d += colspan;
+                    }
+                }
+                bodyHtml += '</tr>';
+            });
+            
+            document.getElementById('tabla-general-body').innerHTML = bodyHtml;
+        }
         
         // === IMPORTAR EXCEL ===
         let importOrigen = null;
