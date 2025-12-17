@@ -95,6 +95,13 @@ def formulario_externo(nombre):
         return "Acceso no autorizado", 403
     return render_template('cargar_externo.html', nombre=nombre.capitalize())
 
+# Vista General para Alicia y Estanislao (pueden ver calendario + cargar)
+@app.route('/vista/<nombre>')
+def vista_externo(nombre):
+    if nombre.lower() not in ['alicia', 'estanislao']:
+        return "Acceso no autorizado", 403
+    return render_template('vista_externo.html', nombre=nombre.capitalize())
+
 @app.route('/api/cargar-externo', methods=['POST'])
 def guardar_carga_externa():
     data = request.json
