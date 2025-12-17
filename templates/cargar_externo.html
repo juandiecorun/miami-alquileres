@@ -12,243 +12,304 @@
             background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%);
             min-height: 100vh;
             color: #e0e0e0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
-        
         .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card {
             background: rgba(255,255,255,0.05);
-            border-radius: 24px;
-            padding: 40px;
-            width: 100%;
-            max-width: 500px;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            font-size: 1.8rem;
-            color: #4ecdc4;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            color: #8892b0;
-            font-size: 0.95rem;
-        }
-        
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { font-size: 1.6rem; color: #4ecdc4; margin-bottom: 10px; }
         .badge {
             display: inline-block;
-            background: {% if nombre == 'Alicia' %}rgba(155,89,182,0.3){% else %}rgba(241,196,15,0.3){% endif %};
-            color: {% if nombre == 'Alicia' %}#9b59b6{% else %}#f1c40f{% endif %};
             padding: 8px 20px;
             border-radius: 20px;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        
-        .form-group {
-            margin-bottom: 24px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #8892b0;
-            font-weight: 500;
-        }
-        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 6px; color: #8892b0; font-weight: 500; font-size: 0.9rem; }
         .form-group input, .form-group select {
             width: 100%;
-            padding: 14px 16px;
-            border-radius: 12px;
+            padding: 12px;
+            border-radius: 10px;
             border: 2px solid rgba(255,255,255,0.1);
             background: rgba(0,0,0,0.3);
             color: white;
             font-size: 1rem;
-            transition: all 0.3s;
         }
-        
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #4ecdc4;
-            background: rgba(0,0,0,0.4);
-        }
-        
-        .date-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #4ecdc4; }
+        .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .btn {
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
+            padding: 12px 24px;
+            border-radius: 10px;
             border: none;
-            background: linear-gradient(135deg, #4ecdc4, #44a08d);
-            color: #0d1b2a;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(78,205,196,0.3);
-        }
-        
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .success-msg {
-            background: rgba(46,204,113,0.2);
-            border: 1px solid #2ecc71;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            margin-top: 20px;
-            display: none;
-        }
-        
-        .success-msg.show { display: block; }
-        
-        .success-msg h3 {
-            color: #2ecc71;
-            margin-bottom: 10px;
-        }
-        
-        .error-msg {
-            background: rgba(231,76,60,0.2);
-            border: 1px solid #e74c3c;
-            border-radius: 12px;
+        .btn-primary { background: linear-gradient(135deg, #4ecdc4, #44a08d); color: #0d1b2a; width: 100%; }
+        .btn-primary:hover { transform: translateY(-2px); }
+        .btn-danger { background: #e74c3c; color: white; padding: 8px 15px; font-size: 0.85rem; }
+        .btn-edit { background: #3498db; color: white; padding: 8px 15px; font-size: 0.85rem; margin-right: 5px; }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+        .msg {
             padding: 15px;
-            text-align: center;
-            margin-top: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
             display: none;
-            color: #e74c3c;
+            text-align: center;
         }
+        .msg.show { display: block; }
+        .msg.ok { background: rgba(46,204,113,0.2); border: 1px solid #2ecc71; color: #2ecc71; }
+        .msg.err { background: rgba(231,76,60,0.2); border: 1px solid #e74c3c; color: #e74c3c; }
         
-        .error-msg.show { display: block; }
-        
-        .historial {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .historial h3 {
-            color: #8892b0;
-            font-size: 0.95rem;
-            margin-bottom: 15px;
-        }
-        
-        .historial-item {
+        h2 { color: #4ecdc4; font-size: 1.2rem; margin-bottom: 15px; }
+        .carga-item {
             background: rgba(0,0,0,0.2);
             border-radius: 10px;
-            padding: 12px 15px;
+            padding: 15px;
             margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        
-        .historial-item .prop { font-weight: 600; color: #4ecdc4; }
-        .historial-item .fecha { color: #8892b0; font-size: 0.85rem; }
-        .historial-item .precio { color: #2ecc71; font-weight: 600; }
-        
-        .empty-state {
+        .carga-info { flex: 1; }
+        .carga-info .prop { font-weight: 600; color: #4ecdc4; }
+        .carga-info .fecha { color: #8892b0; font-size: 0.85rem; }
+        .carga-info .inq { color: #fff; font-size: 0.9rem; margin-top: 5px; }
+        .carga-precio { color: #2ecc71; font-weight: 600; font-size: 1.1rem; }
+        .carga-actions { display: flex; gap: 5px; }
+        .empty { text-align: center; color: #8892b0; padding: 30px; font-style: italic; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab {
+            flex: 1;
+            padding: 12px;
             text-align: center;
-            color: #8892b0;
-            font-style: italic;
-            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.2s;
         }
+        .tab:hover { background: rgba(255,255,255,0.1); }
+        .tab.active { background: rgba(78,205,196,0.2); border-color: #4ecdc4; color: #4ecdc4; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: #1e3a5f;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+        }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="badge">{{ nombre }}</div>
-            <h1>🏠 Cargar Alquiler</h1>
-            <p>Completá los datos del alquiler que conseguiste</p>
-        </div>
-        
-        <form id="cargar-form">
-            <div class="form-group">
-                <label>🏢 Propiedad</label>
-                <select id="propiedad" required>
-                    <option value="">Seleccionar...</option>
-                    <option value="TIDES 14 B">TIDES 14 B</option>
-                    <option value="TIDES 5 L">TIDES 5 L</option>
-                    <option value="TIDES 10 L">TIDES 10 L</option>
-                    <option value="TIDES 10 F">TIDES 10 F</option>
-                    <option value="TIDES 12 F">TIDES 12 F</option>
-                    <option value="Brickell">Brickell</option>
-                    <option value="Local 1">Local 1</option>
-                    <option value="Local 2">Local 2</option>
-                </select>
+        <div class="card">
+            <div class="header">
+                <div class="badge" id="badge">{{ nombre }}</div>
+                <h1>🏠 Gestionar Alquileres</h1>
             </div>
             
-            <div class="date-row">
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('nueva')">➕ Nueva Carga</div>
+                <div class="tab" onclick="showTab('mis')">📋 Mis Cargas</div>
+            </div>
+            
+            <div id="tab-nueva" class="tab-content active">
+                <form id="cargar-form">
+                    <div class="form-group">
+                        <label>🏢 Propiedad</label>
+                        <select id="propiedad" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="TIDES 14 B">TIDES 14 B</option>
+                            <option value="TIDES 5 L">TIDES 5 L</option>
+                            <option value="TIDES 10 L">TIDES 10 L</option>
+                            <option value="TIDES 10 F">TIDES 10 F</option>
+                            <option value="TIDES 12 F">TIDES 12 F</option>
+                            <option value="Brickell">Brickell</option>
+                            <option value="Local 1">Local 1</option>
+                            <option value="Local 2">Local 2</option>
+                        </select>
+                    </div>
+                    
+                    <div class="date-row">
+                        <div class="form-group">
+                            <label>📅 Check-in</label>
+                            <input type="date" id="fecha-inicio" required>
+                        </div>
+                        <div class="form-group">
+                            <label>📅 Check-out</label>
+                            <input type="date" id="fecha-fin" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>💵 Precio por noche (USD)</label>
+                        <input type="number" id="precio" placeholder="150" min="0" step="0.01" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>👤 Nombre del inquilino</label>
+                        <input type="text" id="inquilino" placeholder="Ej: Juan Perez" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">✅ Guardar Alquiler</button>
+                </form>
+                
+                <div class="msg ok" id="msg-ok"></div>
+                <div class="msg err" id="msg-err"></div>
+            </div>
+            
+            <div id="tab-mis" class="tab-content">
+                <h2>📋 Mis últimas cargas</h2>
+                <div id="lista-cargas">
+                    <div class="empty">Cargando...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Editar -->
+    <div class="modal" id="modal-edit">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Editar Carga</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
                 <div class="form-group">
-                    <label>📅 Check-in</label>
-                    <input type="date" id="fecha-inicio" required>
+                    <label>💵 Precio por noche (USD)</label>
+                    <input type="number" id="edit-precio" required>
                 </div>
                 <div class="form-group">
-                    <label>📅 Check-out</label>
-                    <input type="date" id="fecha-fin" required>
+                    <label>👤 Inquilino</label>
+                    <input type="text" id="edit-inquilino" required>
                 </div>
-            </div>
-            
-            <div class="form-group">
-                <label>💵 Precio por noche (USD)</label>
-                <input type="number" id="precio" placeholder="150" min="0" step="0.01" required>
-            </div>
-            
-            <div class="form-group">
-                <label>👤 Nombre del inquilino</label>
-                <input type="text" id="inquilino" placeholder="Ej: Juan Pérez" required>
-            </div>
-            
-            <button type="submit" class="btn" id="btn-submit">
-                ✅ Guardar Alquiler
-            </button>
-        </form>
-        
-        <div class="success-msg" id="success-msg">
-            <h3>✅ ¡Guardado!</h3>
-            <p id="success-text">El alquiler fue cargado correctamente</p>
-        </div>
-        
-        <div class="error-msg" id="error-msg"></div>
-        
-        <div class="historial">
-            <h3>📋 Últimos alquileres cargados por vos</h3>
-            <div id="historial-list">
-                <div class="empty-state">Todavía no cargaste ningún alquiler</div>
-            </div>
+                <button type="submit" class="btn btn-primary">💾 Guardar Cambios</button>
+            </form>
         </div>
     </div>
     
     <script>
         const ORIGEN = '{{ nombre }}';
         
+        // Configurar badge
+        const badge = document.getElementById('badge');
+        if (ORIGEN === 'Alicia') {
+            badge.style.background = 'rgba(155,89,182,0.3)';
+            badge.style.color = '#9b59b6';
+        } else {
+            badge.style.background = 'rgba(241,196,15,0.3)';
+            badge.style.color = '#f1c40f';
+        }
+        
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.tab:nth-child(${tab === 'nueva' ? 1 : 2})`).classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+            if (tab === 'mis') cargarMisCargas();
+        }
+        
+        async function cargarMisCargas() {
+            const res = await fetch('/api/mis-cargas/' + ORIGEN);
+            const cargas = await res.json();
+            const lista = document.getElementById('lista-cargas');
+            
+            if (cargas.length === 0) {
+                lista.innerHTML = '<div class="empty">No tenés cargas todavía</div>';
+                return;
+            }
+            
+            lista.innerHTML = cargas.map(c => `
+                <div class="carga-item">
+                    <div class="carga-info">
+                        <span class="prop">${c.propiedad}</span>
+                        <span class="fecha">${c.fecha}</span>
+                        <div class="inq">👤 ${c.notas || 'Sin nombre'}</div>
+                    </div>
+                    <span class="carga-precio">$${c.precio}</span>
+                    <div class="carga-actions">
+                        <button class="btn btn-edit btn-sm" onclick="editarCarga(${c.id}, ${c.precio}, '${c.notas || ''}')">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="borrarCarga(${c.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function editarCarga(id, precio, inquilino) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-precio').value = precio;
+            document.getElementById('edit-inquilino').value = inquilino;
+            document.getElementById('modal-edit').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('modal-edit').classList.remove('show');
+        }
+        
+        document.getElementById('edit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const res = await fetch('/api/modificar-carga/' + id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    precio: parseFloat(document.getElementById('edit-precio').value),
+                    inquilino: document.getElementById('edit-inquilino').value,
+                    origen: ORIGEN
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                closeModal();
+                cargarMisCargas();
+            } else {
+                alert(data.error || 'Error al modificar');
+            }
+        });
+        
+        async function borrarCarga(id) {
+            if (!confirm('¿Seguro que querés borrar esta carga?')) return;
+            const res = await fetch('/api/borrar-carga/' + id + '/' + ORIGEN, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+                cargarMisCargas();
+            } else {
+                alert(data.error || 'Error al borrar');
+            }
+        }
+        
         document.getElementById('cargar-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const btn = document.getElementById('btn-submit');
-            btn.disabled = true;
-            btn.textContent = '⏳ Guardando...';
             
             const data = {
                 propiedad: document.getElementById('propiedad').value,
@@ -259,90 +320,29 @@
                 origen: ORIGEN
             };
             
-            try {
-                const res = await fetch('/api/cargar-externo', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                
-                const result = await res.json();
-                
-                if (result.success) {
-                    document.getElementById('success-text').textContent = 
-                        `Se cargaron ${result.dias} noche(s) en ${data.propiedad}`;
-                    document.getElementById('success-msg').classList.add('show');
-                    document.getElementById('error-msg').classList.remove('show');
-                    
-                    // Agregar al historial local
-                    agregarHistorial(data);
-                    
-                    // Limpiar formulario
-                    document.getElementById('cargar-form').reset();
-                    
-                    // Ocultar mensaje después de 5 segundos
-                    setTimeout(() => {
-                        document.getElementById('success-msg').classList.remove('show');
-                    }, 5000);
-                } else {
-                    document.getElementById('error-msg').textContent = result.error || 'Error al guardar';
-                    document.getElementById('error-msg').classList.add('show');
-                    document.getElementById('success-msg').classList.remove('show');
-                }
-            } catch (err) {
-                document.getElementById('error-msg').textContent = 'Error de conexión';
-                document.getElementById('error-msg').classList.add('show');
-            }
+            const res = await fetch('/api/cargar-externo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
             
-            btn.disabled = false;
-            btn.textContent = '✅ Guardar Alquiler';
+            const result = await res.json();
+            
+            if (result.success) {
+                document.getElementById('msg-ok').textContent = '✅ Se cargaron ' + result.dias + ' noche(s)';
+                document.getElementById('msg-ok').classList.add('show');
+                document.getElementById('msg-err').classList.remove('show');
+                document.getElementById('cargar-form').reset();
+                setTimeout(() => document.getElementById('msg-ok').classList.remove('show'), 5000);
+            } else {
+                document.getElementById('msg-err').textContent = result.error || 'Error al guardar';
+                document.getElementById('msg-err').classList.add('show');
+            }
         });
         
-        function agregarHistorial(data) {
-            const list = document.getElementById('historial-list');
-            const empty = list.querySelector('.empty-state');
-            if (empty) empty.remove();
-            
-            const item = document.createElement('div');
-            item.className = 'historial-item';
-            item.innerHTML = `
-                <div>
-                    <span class="prop">${data.propiedad}</span>
-                    <span class="fecha">${data.fecha_inicio} → ${data.fecha_fin}</span>
-                </div>
-                <span class="precio">$${data.precio}/noche</span>
-            `;
-            list.insertBefore(item, list.firstChild);
-            
-            // Guardar en localStorage
-            let historial = JSON.parse(localStorage.getItem('historial_' + ORIGEN) || '[]');
-            historial.unshift(data);
-            historial = historial.slice(0, 10); // Solo últimos 10
-            localStorage.setItem('historial_' + ORIGEN, JSON.stringify(historial));
-        }
-        
-        // Cargar historial al iniciar
-        function cargarHistorial() {
-            const historial = JSON.parse(localStorage.getItem('historial_' + ORIGEN) || '[]');
-            if (historial.length > 0) {
-                const list = document.getElementById('historial-list');
-                list.innerHTML = '';
-                historial.forEach(data => {
-                    const item = document.createElement('div');
-                    item.className = 'historial-item';
-                    item.innerHTML = `
-                        <div>
-                            <span class="prop">${data.propiedad}</span>
-                            <span class="fecha">${data.fecha_inicio} → ${data.fecha_fin}</span>
-                        </div>
-                        <span class="precio">$${data.precio}/noche</span>
-                    `;
-                    list.appendChild(item);
-                });
-            }
-        }
-        
-        cargarHistorial();
+        document.getElementById('modal-edit').addEventListener('click', (e) => {
+            if (e.target.id === 'modal-edit') closeModal();
+        });
     </script>
 </body>
 </html>
