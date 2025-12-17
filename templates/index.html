@@ -315,6 +315,10 @@
             border-color: #2ecc71 !important;
             box-shadow: inset 0 0 0 2px #2ecc71;
         }
+        #tabla-general td.selected:not(.libre) {
+            box-shadow: inset 0 0 0 3px #e74c3c !important;
+            opacity: 0.8;
+        }
         #tabla-general td.ocupado-dueño { 
             background: linear-gradient(135deg, #27ae60, #2ecc71);
             color: #fff;
@@ -421,7 +425,7 @@
                     <label>👤 Origen:</label>
                     <select id="dash-filter-origen" onchange="applyDashboardFilters()">
                         <option value="">Todos</option>
-                        <option value="Dueño">Dueño</option>
+                        <option value="Alquiler propio">Alquiler propio</option>
                         <option value="Alicia">Alicia</option>
                         <option value="Estanislao">Estanislao</option>
                     </select>
@@ -480,7 +484,7 @@
                 
                 <div class="legend" style="margin-bottom:20px">
                     <div class="legend-item"><div class="legend-color" style="background:#1a1a2e;border:2px dashed rgba(46,204,113,0.5)"></div><span>LIBRE (click para cargar)</span></div>
-                    <div class="legend-item"><div class="legend-color" style="background:linear-gradient(135deg,#27ae60,#2ecc71)"></div><span>Dueño</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:linear-gradient(135deg,#27ae60,#2ecc71)"></div><span>Alquiler propio</span></div>
                     <div class="legend-item"><div class="legend-color" style="background:linear-gradient(135deg,#8e44ad,#9b59b6)"></div><span>Alicia</span></div>
                     <div class="legend-item"><div class="legend-color" style="background:linear-gradient(135deg,#f39c12,#f1c40f)"></div><span>Estanislao</span></div>
                 </div>
@@ -494,7 +498,8 @@
                     <span><span class="count" id="selected-count-general">0</span> celdas seleccionadas</span>
                     <div class="actions">
                         <button class="btn btn-secondary" onclick="clearSelectionGeneral()">Cancelar</button>
-                        <button class="btn btn-primary" onclick="openMultiModalGeneral()">Cargar selección</button>
+                        <button class="btn btn-primary" id="btn-cargar-general" onclick="openMultiModalGeneral()">Cargar selección</button>
+                        <button class="btn btn-danger" id="btn-eliminar-general" style="background:#e74c3c;display:none" onclick="eliminarSeleccionGeneral()">🗑️ Eliminar selección</button>
                     </div>
                 </div>
             </div>
@@ -604,7 +609,7 @@
                         <label>Origen:</label>
                         <select id="filter-origen" onchange="filtrarIngresos()">
                             <option value="">Todos</option>
-                            <option value="Dueño">Dueño</option>
+                            <option value="Alquiler propio">Alquiler propio</option>
                             <option value="Alicia">Alicia</option>
                             <option value="Estanislao">Estanislao</option>
                         </select>
@@ -702,7 +707,7 @@
                 <div class="table-container">
                     <table>
                         <thead>
-                            <tr><th>Propiedad</th><th>Ingresos</th><th>Gastos</th><th>Rentabilidad</th><th>Noches</th><th>% Ocup</th><th>Ticket</th><th>Dueño</th><th>Terceros</th></tr>
+                            <tr><th>Propiedad</th><th>Ingresos</th><th>Gastos</th><th>Rentabilidad</th><th>Noches</th><th>% Ocup</th><th>Ticket</th><th>Alquiler propio</th><th>Terceros</th></tr>
                         </thead>
                         <tbody id="resumen-table"></tbody>
                     </table>
@@ -733,7 +738,7 @@
                 <div class="form-group">
                     <label>¿Quién lo alquiló?</label>
                     <div class="origen-selector">
-                        <button type="button" class="origen-btn dueño" data-origen="Dueño" onclick="selectOrigen(this)">👤<br>Dueño</button>
+                        <button type="button" class="origen-btn dueño" data-origen="Alquiler propio" onclick="selectOrigen(this)">👤<br>Alquiler propio</button>
                         <button type="button" class="origen-btn alicia" data-origen="Alicia" onclick="selectOrigen(this)">👩<br>Alicia</button>
                         <button type="button" class="origen-btn estanislao" data-origen="Estanislao" onclick="selectOrigen(this)">👨<br>Estanislao</button>
                     </div>
@@ -890,7 +895,7 @@
                     <div class="origen-selector">
                         <button type="button" class="origen-btn alicia" data-origen="Alicia" onclick="selectImportOrigen(this)">👩<br>Alicia</button>
                         <button type="button" class="origen-btn estanislao" data-origen="Estanislao" onclick="selectImportOrigen(this)">👨<br>Estanislao</button>
-                        <button type="button" class="origen-btn dueño" data-origen="Dueño" onclick="selectImportOrigen(this)">👤<br>Dueño</button>
+                        <button type="button" class="origen-btn dueño" data-origen="Alquiler propio" onclick="selectImportOrigen(this)">👤<br>Alquiler propio</button>
                     </div>
                 </div>
                 <div class="form-group">
@@ -930,7 +935,7 @@
                 <div class="form-group">
                     <label>¿Quién lo alquiló?</label>
                     <div class="origen-selector">
-                        <button type="button" class="origen-btn dueño" data-origen="Dueño" onclick="selectEditOrigen(this)">👤<br>Dueño</button>
+                        <button type="button" class="origen-btn dueño" data-origen="Alquiler propio" onclick="selectEditOrigen(this)">👤<br>Alquiler propio</button>
                         <button type="button" class="origen-btn alicia" data-origen="Alicia" onclick="selectEditOrigen(this)">👩<br>Alicia</button>
                         <button type="button" class="origen-btn estanislao" data-origen="Estanislao" onclick="selectEditOrigen(this)">👨<br>Estanislao</button>
                     </div>
@@ -965,15 +970,7 @@
             </div>
             
             <form id="multi-general-form" onsubmit="event.preventDefault(); submitMultiGeneral();">
-                <div class="form-group">
-                    <label>¿Quién lo alquiló?</label>
-                    <div class="origen-selector">
-                        <button type="button" class="origen-btn dueño" data-origen="Dueño" onclick="selectMultiOrigen(this)">👤<br>Dueño</button>
-                        <button type="button" class="origen-btn alicia" data-origen="Alicia" onclick="selectMultiOrigen(this)">👩<br>Alicia</button>
-                        <button type="button" class="origen-btn estanislao" data-origen="Estanislao" onclick="selectMultiOrigen(this)">👨<br>Estanislao</button>
-                    </div>
-                    <input type="hidden" id="multi-origen">
-                </div>
+                <input type="hidden" id="multi-origen" value="Alquiler propio">
                 <div class="form-group">
                     <label>Precio por noche (USD)</label>
                     <input type="number" id="multi-precio" min="0" step="0.01" required placeholder="Ej: 150">
@@ -1432,10 +1429,10 @@
             
             // Ingresos temporarios
             data.ingresos.forEach(i => {
-                if (!porProp[i.nombre]) porProp[i.nombre] = { ing: 0, noches: 0, dueño: 0, terceros: 0, tipo: i.tipo };
+                if (!porProp[i.nombre]) porProp[i.nombre] = { ing: 0, noches: 0, propio: 0, terceros: 0, tipo: i.tipo };
                 porProp[i.nombre].ing += i.total_ingresos;
                 porProp[i.nombre].noches += i.noches;
-                if (i.origen === 'Dueño') porProp[i.nombre].dueño += i.total_ingresos;
+                if (i.origen === 'Alquiler propio') porProp[i.nombre].propio += i.total_ingresos;
                 else porProp[i.nombre].terceros += i.total_ingresos;
             });
             
@@ -1443,7 +1440,7 @@
             if (data.ingresos_mensuales) {
                 data.ingresos_mensuales.forEach(i => {
                     propsMensuales.add(i.nombre);
-                    if (!porProp[i.nombre]) porProp[i.nombre] = { ing: 0, noches: 0, dueño: 0, terceros: 0, tipo: 'mensual', meses: i.meses };
+                    if (!porProp[i.nombre]) porProp[i.nombre] = { ing: 0, noches: 0, propio: 0, terceros: 0, tipo: 'mensual', meses: i.meses };
                     porProp[i.nombre].ing += i.total_ingresos;
                     porProp[i.nombre].meses = i.meses;
                 });
@@ -1454,7 +1451,7 @@
                 if (g.nombre) gastosPorProp[g.nombre] = (gastosPorProp[g.nombre] || 0) + g.total_gastos;
             });
             
-            let html = '', totIng = 0, totGast = 0, totNoches = 0, totDueño = 0, totTerc = 0;
+            let html = '', totIng = 0, totGast = 0, totNoches = 0, totPropio = 0, totTerc = 0;
             const rentPorProp = {};
             let propsTemporarias = 0;
             
@@ -1471,7 +1468,7 @@
                     totNoches += d.noches;
                     propsTemporarias++;
                 }
-                totDueño += d.dueño; totTerc += d.terceros;
+                totPropio += d.propio; totTerc += d.terceros;
                 
                 const nochesDisplay = esMensual ? `${d.meses || 0} meses` : d.noches;
                 const ticketLabel = esMensual ? `$${ticket.toFixed(0)}/mes` : `$${ticket.toFixed(0)}`;
@@ -1484,7 +1481,7 @@
                     <td>${nochesDisplay}</td>
                     <td>${ocup}</td>
                     <td>${ticketLabel}</td>
-                    <td>$${d.dueño.toLocaleString()}</td>
+                    <td>$${d.propio.toLocaleString()}</td>
                     <td>$${d.terceros.toLocaleString()}</td>
                 </tr>`;
             }
@@ -1499,7 +1496,7 @@
                 <td>${totNoches} noches</td>
                 <td>${ocupProm}%</td>
                 <td>$${totNoches > 0 ? (totIng / totNoches).toFixed(0) : 0}</td>
-                <td>$${totDueño.toLocaleString()}</td>
+                <td>$${totPropio.toLocaleString()}</td>
                 <td>$${totTerc.toLocaleString()}</td>
             </tr>`;
             
@@ -1682,9 +1679,27 @@
         function updateSelectionBarGeneral() {
             const bar = document.getElementById('selection-bar-general');
             const count = document.getElementById('selected-count-general');
-            if (selectedCellsGeneral.length > 0) {
+            const btnCargar = document.getElementById('btn-cargar-general');
+            const btnEliminar = document.getElementById('btn-eliminar-general');
+            
+            const totalLibres = selectedCellsGeneral.length;
+            const totalRangos = selectedRangos.length;
+            let totalDiasOcupados = 0;
+            selectedRangos.forEach(r => totalDiasOcupados += r.fechas.length);
+            
+            if (totalLibres > 0 || totalRangos > 0) {
                 bar.style.display = 'flex';
-                count.textContent = selectedCellsGeneral.length;
+                
+                // Mostrar resumen
+                let texto = '';
+                if (totalLibres > 0) texto += `${totalLibres} días libres`;
+                if (totalLibres > 0 && totalRangos > 0) texto += ' + ';
+                if (totalRangos > 0) texto += `${totalRangos} alquiler(es) (${totalDiasOcupados} días)`;
+                count.textContent = texto;
+                
+                // Mostrar botones según tipo de selección
+                btnCargar.style.display = totalLibres > 0 ? 'inline-block' : 'none';
+                btnEliminar.style.display = totalRangos > 0 ? 'inline-block' : 'none';
             } else {
                 bar.style.display = 'none';
             }
@@ -1692,8 +1707,55 @@
         
         function clearSelectionGeneral() {
             selectedCellsGeneral = [];
+            selectedRangos = [];
             document.querySelectorAll('#tabla-general td.selected').forEach(c => c.classList.remove('selected'));
             updateSelectionBarGeneral();
+        }
+        
+        // Selección de rangos ocupados (alquileres completos)
+        let selectedRangos = [];
+        
+        function toggleSelectRango(cell, rangoDataEncoded) {
+            const rangoData = JSON.parse(decodeURIComponent(rangoDataEncoded));
+            const key = `${rangoData.prop}-${rangoData.fechas[0]}`;
+            
+            const idx = selectedRangos.findIndex(r => r.key === key);
+            if (idx >= 0) {
+                selectedRangos.splice(idx, 1);
+                cell.classList.remove('selected');
+            } else {
+                selectedRangos.push({ 
+                    key, 
+                    propId: rangoData.propId, 
+                    prop: rangoData.prop,
+                    fechas: rangoData.fechas,
+                    inquilino: rangoData.inquilino,
+                    origen: rangoData.origen
+                });
+                cell.classList.add('selected');
+            }
+            updateSelectionBarGeneral();
+        }
+        
+        async function eliminarSeleccionGeneral() {
+            if (selectedRangos.length === 0) return;
+            
+            // Contar total de días
+            let totalDias = 0;
+            selectedRangos.forEach(r => totalDias += r.fechas.length);
+            
+            if (!confirm(`¿Seguro que querés eliminar ${selectedRangos.length} alquiler(es) (${totalDias} días en total)?`)) return;
+            
+            for (const rango of selectedRangos) {
+                for (const fecha of rango.fechas) {
+                    await fetch(`/api/ocupacion/${rango.propId}/${fecha}`, { method: 'DELETE' });
+                }
+            }
+            
+            showToast(`Se eliminaron ${totalDias} días`, 'success');
+            clearSelectionGeneral();
+            loadCalendarioGeneral();
+            loadAll();
         }
         
         function openMultiModalGeneral() {
@@ -1716,11 +1778,10 @@
             
             document.getElementById('multi-resumen').innerHTML = resumen;
             
-            // Limpiar formulario
+            // Limpiar formulario (mantener origen como "Alquiler propio")
             document.getElementById('multi-precio').value = '';
             document.getElementById('multi-notas').value = '';
-            document.getElementById('multi-origen').value = '';
-            document.querySelectorAll('#multi-general-modal .origen-btn').forEach(b => b.classList.remove('selected'));
+            document.getElementById('multi-origen').value = 'Alquiler propio';
             
             document.getElementById('multi-general-modal').classList.add('show');
             
@@ -1730,11 +1791,10 @@
         
         async function submitMultiGeneral() {
             const precio = parseFloat(document.getElementById('multi-precio').value);
-            const origen = document.getElementById('multi-origen').value;
+            const origen = document.getElementById('multi-origen').value || 'Alquiler propio';
             const notas = document.getElementById('multi-notas').value;
             
             if (!precio || precio <= 0) { showToast('Ingresá un precio válido', 'error'); return; }
-            if (!origen) { showToast('Seleccioná quién alquiló', 'error'); return; }
             
             let total = 0;
             for (const prop of Object.keys(window.pendingMultiGeneral)) {
@@ -1831,7 +1891,7 @@
                         let clase = 'dia-cell ocupado';
                         let origenTexto = origenActual.toUpperCase();
                         
-                        if (origenLower === 'dueño') {
+                        if (origenLower === 'alquiler propio') {
                             clase = 'dia-cell ocupado-dueño';
                         } else if (origenLower === 'alicia') {
                             clase = 'dia-cell ocupado-alicia';
@@ -1840,23 +1900,27 @@
                         }
                         
                         const titulo = `${origenActual}: ${inquilinoActual || 'Sin nombre'} - $${precioTotal} (${colspan} noches)`;
+                        const precioPorNoche = ocup.precio || 0;
                         const contenido = `<div class="celda-info-merged">
                             <span class="merged-inquilino">${inquilinoActual || origenTexto}</span>
-                            <span class="merged-detalle">${origenTexto} · ${colspan}n · $${precioTotal}</span>
+                            <span class="merged-detalle">${origenTexto} · ${colspan} noches x $${precioPorNoche}</span>
                         </div>`;
                         
-                        // Guardar info de la primera ocupación del rango para editar
-                        const ocupInfoStr = encodeURIComponent(JSON.stringify({
-                            id: ocup.id,
+                        // Guardar todas las fechas del rango para eliminar
+                        const fechasRango = [];
+                        for (let i = 0; i < colspan; i++) {
+                            const diaRango = d + i;
+                            fechasRango.push(`${generalYear}-${String(generalMonth).padStart(2,'0')}-${String(diaRango).padStart(2,'0')}`);
+                        }
+                        const rangoData = encodeURIComponent(JSON.stringify({
                             propId: propId,
-                            fecha: fechaStr,
-                            precio: ocup.precio,
-                            origen: origenActual,
-                            notas: inquilinoActual,
-                            prop: depto
+                            prop: depto,
+                            fechas: fechasRango,
+                            inquilino: inquilinoActual,
+                            origen: origenActual
                         }));
                         
-                        bodyHtml += `<td class="${clase}" colspan="${colspan}" title="${titulo}" style="cursor:pointer" onclick="openEditOcup(decodeURIComponent('${ocupInfoStr}'))">${contenido}</td>`;
+                        bodyHtml += `<td class="${clase}" colspan="${colspan}" title="${titulo}" style="cursor:pointer" data-ocupado="true" onclick="toggleSelectRango(this, '${rangoData}')">${contenido}</td>`;
                         d += colspan;
                     }
                 }
