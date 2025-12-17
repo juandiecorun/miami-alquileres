@@ -48,18 +48,35 @@ def init_db():
         FOREIGN KEY (propiedad_id) REFERENCES propiedades(id)
     )''')
     
+    # Tabla para alquileres mensuales (Brickell, locales)
+    c.execute('''CREATE TABLE IF NOT EXISTS alquileres_mensuales (
+        id INTEGER PRIMARY KEY,
+        propiedad_id INTEGER,
+        año INTEGER,
+        mes INTEGER,
+        monto REAL,
+        notas TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (propiedad_id) REFERENCES propiedades(id),
+        UNIQUE(propiedad_id, año, mes)
+    )''')
+    
     propiedades = [
-        ('TIDES 14 B', 'departamento'),
-        ('TIDES 5 L', 'departamento'),
-        ('TIDES 10 L', 'departamento'),
-        ('TIDES 10 F', 'departamento'),
-        ('TIDES 12 F', 'departamento'),
-        ('Brickell', 'departamento'),
-        ('Local 1', 'local'),
-        ('Local 2', 'local'),
+        ('TIDES 14 B', 'temporario'),
+        ('TIDES 5 L', 'temporario'),
+        ('TIDES 10 L', 'temporario'),
+        ('TIDES 10 F', 'temporario'),
+        ('TIDES 12 F', 'temporario'),
+        ('Brickell', 'mensual'),
+        ('Local 1', 'mensual'),
+        ('Local 2', 'mensual'),
     ]
     for nombre, tipo in propiedades:
         c.execute('INSERT OR IGNORE INTO propiedades (nombre, tipo) VALUES (?, ?)', (nombre, tipo))
+    
+    # Actualizar tipos existentes
+    c.execute("UPDATE propiedades SET tipo = 'temporario' WHERE nombre LIKE 'TIDES%'")
+    c.execute("UPDATE propiedades SET tipo = 'mensual' WHERE nombre IN ('Brickell', 'Local 1', 'Local 2')")
     
     conn.commit()
     conn.close()
@@ -69,6 +86,64 @@ init_db()
 @app.route('/')
 def index():
     return render_template('index.html')
+
+# === FORMULARIOS EXTERNOS PARA ALICIA Y ESTANISLAO ===
+
+@app.route('/cargar/<nombre>')
+def formulario_externo(nombre):
+    if nombre.lower() not in ['alicia', 'estanislao']:
+        return "Acceso no autorizado", 403
+    return render_template('cargar_externo.html', nombre=nombre.capitalize())
+
+@app.route('/api/cargar-externo', methods=['POST'])
+def guardar_carga_externa():
+    data = request.json
+    conn = get_db()
+    
+    try:
+        # Obtener ID de propiedad
+        prop = conn.execute('SELECT id FROM propiedades WHERE nombre = ?', (data['propiedad'],)).fetchone()
+        if not prop:
+            return jsonify({'success': False, 'error': 'Propiedad no encontrada'}), 400
+        
+        # Guardar cada fecha del rango
+        from datetime import datetime, timedelta
+        
+        fecha_inicio = datetime.strptime(data['fecha_inicio'], '%Y-%m-%d')
+        fecha_fin = datetime.strptime(data['fecha_fin'], '%Y-%m-%d')
+        
+        dias_guardados = 0
+        fecha_actual = fecha_inicio
+        
+        while fecha_actual <= fecha_fin:
+            fecha_str = fecha_actual.strftime('%Y-%m-%d')
+            
+            # Verificar si ya existe una ocupación en esa fecha para esa propiedad
+            existente = conn.execute('''
+                SELECT id, origen FROM ocupaciones 
+                WHERE propiedad_id = ? AND fecha = ?
+            ''', (prop['id'], fecha_str)).fetchone()
+            
+            if existente:
+                # Ya existe, no sobrescribir
+                fecha_actual += timedelta(days=1)
+                continue
+            
+            # Insertar nueva ocupación
+            conn.execute('''
+                INSERT INTO ocupaciones (propiedad_id, fecha, precio, origen, notas)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (prop['id'], fecha_str, data['precio'], data['origen'], data['inquilino']))
+            
+            dias_guardados += 1
+            fecha_actual += timedelta(days=1)
+        
+        conn.commit()
+        return jsonify({'success': True, 'dias': dias_guardados})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+    finally:
+        conn.close()
 
 @app.route('/api/propiedades')
 def get_propiedades():
@@ -145,10 +220,51 @@ def eliminar_gasto(id):
     conn.close()
     return jsonify({'success': True})
 
+# === ALQUILERES MENSUALES (Brickell, Local 1, Local 2) ===
+
+@app.route('/api/alquileres-mensuales/<int:year>')
+def get_alquileres_mensuales(year):
+    conn = get_db()
+    alquileres = conn.execute('''
+        SELECT a.*, p.nombre as propiedad_nombre 
+        FROM alquileres_mensuales a 
+        JOIN propiedades p ON a.propiedad_id = p.id
+        WHERE a.año = ?
+        ORDER BY a.mes
+    ''', (year,)).fetchall()
+    conn.close()
+    return jsonify([dict(a) for a in alquileres])
+
+@app.route('/api/alquiler-mensual', methods=['POST'])
+def guardar_alquiler_mensual():
+    data = request.json
+    conn = get_db()
+    try:
+        conn.execute('''
+            INSERT OR REPLACE INTO alquileres_mensuales (propiedad_id, año, mes, monto, notas)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (data['propiedad_id'], data['año'], data['mes'], data['monto'], data.get('notas', '')))
+        conn.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+    finally:
+        conn.close()
+
+@app.route('/api/alquiler-mensual/<int:propiedad_id>/<int:anio>/<int:mes>', methods=['DELETE'])
+def eliminar_alquiler_mensual(propiedad_id, anio, mes):
+    conn = get_db()
+    conn.execute('DELETE FROM alquileres_mensuales WHERE propiedad_id = ? AND año = ? AND mes = ?', 
+                 (propiedad_id, anio, mes))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
 @app.route('/api/resumen/<int:year>')
 def resumen(year):
     conn = get_db()
     
+    # Ingresos de ocupaciones temporarias
     ingresos = conn.execute('''
         SELECT p.id, p.nombre, p.tipo, o.origen,
                COUNT(*) as noches,
@@ -158,6 +274,17 @@ def resumen(year):
         WHERE strftime('%Y', o.fecha) = ?
         GROUP BY p.id, o.origen
     ''', (str(year),)).fetchall()
+    
+    # Ingresos de alquileres mensuales
+    ingresos_mensuales = conn.execute('''
+        SELECT p.id, p.nombre, p.tipo,
+               COUNT(*) as meses,
+               SUM(a.monto) as total_ingresos
+        FROM alquileres_mensuales a
+        JOIN propiedades p ON a.propiedad_id = p.id
+        WHERE a.año = ?
+        GROUP BY p.id
+    ''', (year,)).fetchall()
     
     gastos = conn.execute('''
         SELECT p.id, p.nombre, g.categoria,
@@ -178,6 +305,7 @@ def resumen(year):
     
     return jsonify({
         'ingresos': [dict(i) for i in ingresos],
+        'ingresos_mensuales': [dict(i) for i in ingresos_mensuales],
         'gastos': [dict(g) for g in gastos],
         'gastos_generales': gastos_generales['total'] or 0
     })
@@ -211,11 +339,16 @@ def gastos_detalle(year):
     conn.close()
     return jsonify([dict(g) for g in gastos])
 
-@app.route('/api/exportar/excel/<int:year>')
-def exportar_excel(year):
+@app.route('/api/exportar/excel')
+def exportar_excel():
     try:
         from openpyxl import Workbook
         from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        
+        # Obtener parámetros de filtro
+        desde = request.args.get('desde', f'{datetime.now().year}-01-01')
+        hasta = request.args.get('hasta', f'{datetime.now().year}-12-31')
+        propiedad = request.args.get('propiedad', '')
         
         conn = get_db()
         wb = Workbook()
@@ -233,30 +366,43 @@ def exportar_excel(year):
         # Hoja de Ingresos
         ws1 = wb.active
         ws1.title = "Ingresos"
-        headers = ['Fecha', 'Propiedad', 'Precio USD', 'Origen', 'Notas']
+        headers = ['Fecha', 'Propiedad', 'Precio USD', 'Origen', 'Inquilino']
         ws1.append(headers)
         for cell in ws1[1]:
             cell.font = header_font
             cell.fill = header_fill
             cell.border = border
         
-        ocupaciones = conn.execute('''
+        query = '''
             SELECT o.fecha, p.nombre, o.precio, o.origen, o.notas
             FROM ocupaciones o
             JOIN propiedades p ON o.propiedad_id = p.id
-            WHERE strftime('%Y', o.fecha) = ?
-            ORDER BY o.fecha, p.nombre
-        ''', (str(year),)).fetchall()
+            WHERE o.fecha >= ? AND o.fecha <= ?
+        '''
+        params = [desde, hasta]
         
+        if propiedad:
+            query += ' AND p.nombre = ?'
+            params.append(propiedad)
+        
+        query += ' ORDER BY o.fecha, p.nombre'
+        ocupaciones = conn.execute(query, params).fetchall()
+        
+        total_ingresos = 0
         for o in ocupaciones:
             ws1.append(list(o))
+            total_ingresos += o[2] if o[2] else 0
+        
+        # Fila de total
+        ws1.append(['', '', '', '', ''])
+        ws1.append(['TOTAL', '', total_ingresos, '', ''])
         
         # Ajustar anchos
         ws1.column_dimensions['A'].width = 12
         ws1.column_dimensions['B'].width = 15
         ws1.column_dimensions['C'].width = 12
         ws1.column_dimensions['D'].width = 12
-        ws1.column_dimensions['E'].width = 30
+        ws1.column_dimensions['E'].width = 25
         
         # Hoja de Gastos
         ws2 = wb.create_sheet("Gastos")
@@ -267,16 +413,28 @@ def exportar_excel(year):
             cell.fill = header_fill
             cell.border = border
         
-        gastos = conn.execute('''
+        query_gastos = '''
             SELECT g.fecha, COALESCE(p.nombre, 'General'), g.categoria, g.monto, g.descripcion
             FROM gastos g
             LEFT JOIN propiedades p ON g.propiedad_id = p.id
-            WHERE strftime('%Y', g.fecha) = ?
-            ORDER BY g.fecha
-        ''', (str(year),)).fetchall()
+            WHERE g.fecha >= ? AND g.fecha <= ?
+        '''
+        params_gastos = [desde, hasta]
         
+        if propiedad:
+            query_gastos += ' AND (p.nombre = ? OR g.propiedad_id IS NULL)'
+            params_gastos.append(propiedad)
+        
+        query_gastos += ' ORDER BY g.fecha'
+        gastos = conn.execute(query_gastos, params_gastos).fetchall()
+        
+        total_gastos = 0
         for g in gastos:
             ws2.append(list(g))
+            total_gastos += g[3] if g[3] else 0
+        
+        ws2.append(['', '', '', '', ''])
+        ws2.append(['TOTAL', '', '', total_gastos, ''])
         
         ws2.column_dimensions['A'].width = 12
         ws2.column_dimensions['B'].width = 15
@@ -286,45 +444,126 @@ def exportar_excel(year):
         
         # Hoja de Resumen
         ws3 = wb.create_sheet("Resumen")
-        headers = ['Propiedad', 'Ingresos', 'Noches', 'Ticket Prom', 'Gastos', 'Rentabilidad', '% Ocupación']
+        ws3.append([f'Período: {desde} al {hasta}'])
+        ws3.append([f'Propiedad: {propiedad if propiedad else "Todas"}'])
+        ws3.append([''])
+        
+        headers = ['Propiedad', 'Ingresos', 'Noches', 'Ticket Prom', 'Gastos', 'Rentabilidad']
         ws3.append(headers)
-        for cell in ws3[1]:
+        for cell in ws3[4]:
             cell.font = header_font
             cell.fill = header_fill
             cell.border = border
         
-        resumen = conn.execute('''
+        query_resumen = '''
             SELECT p.nombre,
                    COALESCE(SUM(o.precio), 0) as ingresos,
                    COUNT(o.id) as noches
             FROM propiedades p
-            LEFT JOIN ocupaciones o ON p.id = o.propiedad_id AND strftime('%Y', o.fecha) = ?
-            GROUP BY p.id
-        ''', (str(year),)).fetchall()
+            LEFT JOIN ocupaciones o ON p.id = o.propiedad_id 
+                AND o.fecha >= ? AND o.fecha <= ?
+        '''
+        params_res = [desde, hasta]
+        
+        if propiedad:
+            query_resumen += ' WHERE p.nombre = ?'
+            params_res.append(propiedad)
+        
+        query_resumen += ' GROUP BY p.id'
+        resumen = conn.execute(query_resumen, params_res).fetchall()
         
         for r in resumen:
             nombre, ingresos, noches = r
             ticket = ingresos / noches if noches > 0 else 0
-            ocupacion = (noches / 365) * 100
-            gasto = conn.execute('''
+            gasto_query = '''
                 SELECT COALESCE(SUM(monto), 0) FROM gastos 
                 WHERE propiedad_id = (SELECT id FROM propiedades WHERE nombre = ?) 
-                AND strftime('%Y', fecha) = ?
-            ''', (nombre, str(year))).fetchone()[0]
+                AND fecha >= ? AND fecha <= ?
+            '''
+            gasto = conn.execute(gasto_query, (nombre, desde, hasta)).fetchone()[0]
             rentabilidad = ingresos - gasto
-            ws3.append([nombre, ingresos, noches, round(ticket, 2), gasto, rentabilidad, f'{ocupacion:.1f}%'])
+            ws3.append([nombre, ingresos, noches, round(ticket, 2), gasto, rentabilidad])
         
-        for col in ['A', 'B', 'C', 'D', 'E', 'F', 'G']:
+        for col in ['A', 'B', 'C', 'D', 'E', 'F']:
             ws3.column_dimensions[col].width = 14
         
         conn.close()
         
-        filename = f'data/Reporte_Miami_{year}.xlsx'
+        filename = f'data/Reporte_Miami_{desde}_a_{hasta}.xlsx'
         wb.save(filename)
         
         return send_file(filename, as_attachment=True)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/descargar-template')
+def descargar_template():
+    return send_file('data/Template_Alquileres.xlsx', as_attachment=True)
+
+@app.route('/api/importar-excel', methods=['POST'])
+def importar_excel():
+    try:
+        from openpyxl import load_workbook
+        
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'error': 'No se envió archivo'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'success': False, 'error': 'Archivo vacío'}), 400
+        
+        # Leer el Excel
+        wb = load_workbook(file)
+        ws = wb.active
+        
+        conn = get_db()
+        importados = 0
+        errores = []
+        origen = request.form.get('origen', 'Dueño')
+        
+        # Obtener mapeo de propiedades
+        props = conn.execute('SELECT id, nombre FROM propiedades').fetchall()
+        prop_map = {p['nombre']: p['id'] for p in props}
+        
+        # Leer filas (empezando desde la 5, saltando headers)
+        for row_num, row in enumerate(ws.iter_rows(min_row=5, values_only=True), start=5):
+            propiedad, fecha, precio, inquilino = row[0], row[1], row[2], row[3]
+            
+            # Saltar filas vacías
+            if not propiedad or not fecha:
+                continue
+            
+            # Validar propiedad
+            if propiedad not in prop_map:
+                errores.append(f'Fila {row_num}: Propiedad "{propiedad}" no existe')
+                continue
+            
+            # Convertir fecha si es necesario
+            if hasattr(fecha, 'strftime'):
+                fecha_str = fecha.strftime('%Y-%m-%d')
+            else:
+                fecha_str = str(fecha)
+            
+            # Insertar o actualizar
+            try:
+                conn.execute('''
+                    INSERT OR REPLACE INTO ocupaciones (propiedad_id, fecha, precio, origen, notas)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (prop_map[propiedad], fecha_str, float(precio or 0), origen, inquilino or ''))
+                importados += 1
+            except Exception as e:
+                errores.append(f'Fila {row_num}: {str(e)}')
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'importados': importados,
+            'errores': errores
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/presentacion/<int:year>')
 def generar_presentacion(year):
