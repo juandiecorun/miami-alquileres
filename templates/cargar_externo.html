@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargar Alquiler - {{ nombre }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255,255,255,0.05);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            color: #4ecdc4;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #8892b0;
+            font-size: 0.95rem;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: {% if nombre == 'Alicia' %}rgba(155,89,182,0.3){% else %}rgba(241,196,15,0.3){% endif %};
+            color: {% if nombre == 'Alicia' %}#9b59b6{% else %}#f1c40f{% endif %};
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #8892b0;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.3);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            background: rgba(0,0,0,0.4);
+        }
+        
+        .date-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: #0d1b2a;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(78,205,196,0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .success-msg {
+            background: rgba(46,204,113,0.2);
+            border: 1px solid #2ecc71;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .success-msg.show { display: block; }
+        
+        .success-msg h3 {
+            color: #2ecc71;
+            margin-bottom: 10px;
+        }
+        
+        .error-msg {
+            background: rgba(231,76,60,0.2);
+            border: 1px solid #e74c3c;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+            color: #e74c3c;
+        }
+        
+        .error-msg.show { display: block; }
+        
+        .historial {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .historial h3 {
+            color: #8892b0;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+        }
+        
+        .historial-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .historial-item .prop { font-weight: 600; color: #4ecdc4; }
+        .historial-item .fecha { color: #8892b0; font-size: 0.85rem; }
+        .historial-item .precio { color: #2ecc71; font-weight: 600; }
+        
+        .empty-state {
+            text-align: center;
+            color: #8892b0;
+            font-style: italic;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="badge">{{ nombre }}</div>
+            <h1>🏠 Cargar Alquiler</h1>
+            <p>Completá los datos del alquiler que conseguiste</p>
+        </div>
+        
+        <form id="cargar-form">
+            <div class="form-group">
+                <label>🏢 Propiedad</label>
+                <select id="propiedad" required>
+                    <option value="">Seleccionar...</option>
+                    <option value="TIDES 14 B">TIDES 14 B</option>
+                    <option value="TIDES 5 L">TIDES 5 L</option>
+                    <option value="TIDES 10 L">TIDES 10 L</option>
+                    <option value="TIDES 10 F">TIDES 10 F</option>
+                    <option value="TIDES 12 F">TIDES 12 F</option>
+                    <option value="Brickell">Brickell</option>
+                    <option value="Local 1">Local 1</option>
+                    <option value="Local 2">Local 2</option>
+                </select>
+            </div>
+            
+            <div class="date-row">
+                <div class="form-group">
+                    <label>📅 Check-in</label>
+                    <input type="date" id="fecha-inicio" required>
+                </div>
+                <div class="form-group">
+                    <label>📅 Check-out</label>
+                    <input type="date" id="fecha-fin" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>💵 Precio por noche (USD)</label>
+                <input type="number" id="precio" placeholder="150" min="0" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <label>👤 Nombre del inquilino</label>
+                <input type="text" id="inquilino" placeholder="Ej: Juan Pérez" required>
+            </div>
+            
+            <button type="submit" class="btn" id="btn-submit">
+                ✅ Guardar Alquiler
+            </button>
+        </form>
+        
+        <div class="success-msg" id="success-msg">
+            <h3>✅ ¡Guardado!</h3>
+            <p id="success-text">El alquiler fue cargado correctamente</p>
+        </div>
+        
+        <div class="error-msg" id="error-msg"></div>
+        
+        <div class="historial">
+            <h3>📋 Últimos alquileres cargados por vos</h3>
+            <div id="historial-list">
+                <div class="empty-state">Todavía no cargaste ningún alquiler</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const ORIGEN = '{{ nombre }}';
+        
+        document.getElementById('cargar-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.textContent = '⏳ Guardando...';
+            
+            const data = {
+                propiedad: document.getElementById('propiedad').value,
+                fecha_inicio: document.getElementById('fecha-inicio').value,
+                fecha_fin: document.getElementById('fecha-fin').value,
+                precio: parseFloat(document.getElementById('precio').value),
+                inquilino: document.getElementById('inquilino').value,
+                origen: ORIGEN
+            };
+            
+            try {
+                const res = await fetch('/api/cargar-externo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await res.json();
+                
+                if (result.success) {
+                    document.getElementById('success-text').textContent = 
+                        `Se cargaron ${result.dias} noche(s) en ${data.propiedad}`;
+                    document.getElementById('success-msg').classList.add('show');
+                    document.getElementById('error-msg').classList.remove('show');
+                    
+                    // Agregar al historial local
+                    agregarHistorial(data);
+                    
+                    // Limpiar formulario
+                    document.getElementById('cargar-form').reset();
+                    
+                    // Ocultar mensaje después de 5 segundos
+                    setTimeout(() => {
+                        document.getElementById('success-msg').classList.remove('show');
+                    }, 5000);
+                } else {
+                    document.getElementById('error-msg').textContent = result.error || 'Error al guardar';
+                    document.getElementById('error-msg').classList.add('show');
+                    document.getElementById('success-msg').classList.remove('show');
+                }
+            } catch (err) {
+                document.getElementById('error-msg').textContent = 'Error de conexión';
+                document.getElementById('error-msg').classList.add('show');
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '✅ Guardar Alquiler';
+        });
+        
+        function agregarHistorial(data) {
+            const list = document.getElementById('historial-list');
+            const empty = list.querySelector('.empty-state');
+            if (empty) empty.remove();
+            
+            const item = document.createElement('div');
+            item.className = 'historial-item';
+            item.innerHTML = `
+                <div>
+                    <span class="prop">${data.propiedad}</span>
+                    <span class="fecha">${data.fecha_inicio} → ${data.fecha_fin}</span>
+                </div>
+                <span class="precio">$${data.precio}/noche</span>
+            `;
+            list.insertBefore(item, list.firstChild);
+            
+            // Guardar en localStorage
+            let historial = JSON.parse(localStorage.getItem('historial_' + ORIGEN) || '[]');
+            historial.unshift(data);
+            historial = historial.slice(0, 10); // Solo últimos 10
+            localStorage.setItem('historial_' + ORIGEN, JSON.stringify(historial));
+        }
+        
+        // Cargar historial al iniciar
+        function cargarHistorial() {
+            const historial = JSON.parse(localStorage.getItem('historial_' + ORIGEN) || '[]');
+            if (historial.length > 0) {
+                const list = document.getElementById('historial-list');
+                list.innerHTML = '';
+                historial.forEach(data => {
+                    const item = document.createElement('div');
+                    item.className = 'historial-item';
+                    item.innerHTML = `
+                        <div>
+                            <span class="prop">${data.propiedad}</span>
+                            <span class="fecha">${data.fecha_inicio} → ${data.fecha_fin}</span>
+                        </div>
+                        <span class="precio">$${data.precio}/noche</span>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+        }
+        
+        cargarHistorial();
+    </script>
+</body>
+</html>
