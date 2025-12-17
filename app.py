@@ -234,6 +234,18 @@ def eliminar_ocupacion(propiedad_id, fecha):
     conn.close()
     return jsonify({'success': True})
 
+@app.route('/api/ocupacion/<int:ocupacion_id>', methods=['PUT'])
+def editar_ocupacion(ocupacion_id):
+    data = request.json
+    conn = get_db()
+    conn.execute('''
+        UPDATE ocupaciones SET precio = ?, origen = ?, notas = ?
+        WHERE id = ?
+    ''', (data['precio'], data['origen'], data['notas'], ocupacion_id))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
 @app.route('/api/gastos', methods=['GET', 'POST'])
 def gastos():
     conn = get_db()
