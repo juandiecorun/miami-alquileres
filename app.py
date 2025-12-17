@@ -145,6 +145,52 @@ def guardar_carga_externa():
     finally:
         conn.close()
 
+@app.route('/api/mis-cargas/<origen>')
+def obtener_cargas_externo(origen):
+    conn = get_db()
+    cargas = conn.execute('''
+        SELECT o.id, o.fecha, o.precio, o.notas, p.nombre as propiedad
+        FROM ocupaciones o
+        JOIN propiedades p ON o.propiedad_id = p.id
+        WHERE o.origen = ?
+        ORDER BY o.fecha DESC
+        LIMIT 50
+    ''', (origen.capitalize(),)).fetchall()
+    conn.close()
+    return jsonify([dict(c) for c in cargas])
+
+@app.route('/api/borrar-carga/<int:id>/<origen>', methods=['DELETE'])
+def borrar_carga_externa(id, origen):
+    conn = get_db()
+    # Solo permitir borrar si el origen coincide
+    carga = conn.execute('SELECT origen FROM ocupaciones WHERE id = ?', (id,)).fetchone()
+    if not carga or carga['origen'].lower() != origen.lower():
+        conn.close()
+        return jsonify({'success': False, 'error': 'No autorizado'}), 403
+    
+    conn.execute('DELETE FROM ocupaciones WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
+@app.route('/api/modificar-carga/<int:id>', methods=['PUT'])
+def modificar_carga_externa(id):
+    data = request.json
+    conn = get_db()
+    
+    # Verificar que el origen coincida
+    carga = conn.execute('SELECT origen FROM ocupaciones WHERE id = ?', (id,)).fetchone()
+    if not carga or carga['origen'].lower() != data['origen'].lower():
+        conn.close()
+        return jsonify({'success': False, 'error': 'No autorizado'}), 403
+    
+    conn.execute('''
+        UPDATE ocupaciones SET precio = ?, notas = ? WHERE id = ?
+    ''', (data['precio'], data['inquilino'], id))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
 @app.route('/api/propiedades')
 def get_propiedades():
     conn = get_db()
