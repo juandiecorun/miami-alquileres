@@ -910,6 +910,48 @@
         </div>
     </div>
     
+    <!-- Modal Editar/Eliminar Ocupación -->
+    <div class="modal" id="edit-ocup-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Editar Ocupación</h3>
+                <button class="modal-close" onclick="closeModal('edit-ocup-modal')">&times;</button>
+            </div>
+            
+            <div class="help-text" style="margin-bottom:15px" id="edit-ocup-info">
+                Información de la ocupación
+            </div>
+            
+            <form id="edit-ocup-form" onsubmit="event.preventDefault(); submitEditOcup();">
+                <input type="hidden" id="edit-ocup-id">
+                <input type="hidden" id="edit-ocup-propid">
+                <input type="hidden" id="edit-ocup-fecha">
+                
+                <div class="form-group">
+                    <label>¿Quién lo alquiló?</label>
+                    <div class="origen-selector">
+                        <button type="button" class="origen-btn dueño" data-origen="Dueño" onclick="selectEditOrigen(this)">👤<br>Dueño</button>
+                        <button type="button" class="origen-btn alicia" data-origen="Alicia" onclick="selectEditOrigen(this)">👩<br>Alicia</button>
+                        <button type="button" class="origen-btn estanislao" data-origen="Estanislao" onclick="selectEditOrigen(this)">👨<br>Estanislao</button>
+                    </div>
+                    <input type="hidden" id="edit-ocup-origen">
+                </div>
+                <div class="form-group">
+                    <label>Precio por noche (USD)</label>
+                    <input type="number" id="edit-ocup-precio" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Nombre del inquilino</label>
+                    <input type="text" id="edit-ocup-notas" placeholder="Ej: Sergio las Heras">
+                </div>
+                <div style="display:flex;gap:10px">
+                    <button type="submit" class="btn btn-primary" style="flex:1">✅ Guardar</button>
+                    <button type="button" class="btn btn-danger" style="flex:1;background:#e74c3c" onclick="deleteOcup()">🗑️ Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <!-- Modal Cargar desde Vista General -->
     <div class="modal" id="multi-general-modal">
         <div class="modal-content">
@@ -1117,6 +1159,67 @@
             document.querySelectorAll('#multi-general-modal .origen-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             document.getElementById('multi-origen').value = btn.dataset.origen;
+        }
+        
+        function selectEditOrigen(btn) {
+            document.querySelectorAll('#edit-ocup-modal .origen-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById('edit-ocup-origen').value = btn.dataset.origen;
+        }
+        
+        function openEditOcup(infoStr) {
+            const info = typeof infoStr === 'string' ? JSON.parse(infoStr) : infoStr;
+            
+            document.getElementById('edit-ocup-id').value = info.id;
+            document.getElementById('edit-ocup-propid').value = info.propId;
+            document.getElementById('edit-ocup-fecha').value = info.fecha;
+            document.getElementById('edit-ocup-precio').value = info.precio;
+            document.getElementById('edit-ocup-notas').value = info.notas || '';
+            document.getElementById('edit-ocup-origen').value = info.origen;
+            
+            document.getElementById('edit-ocup-info').innerHTML = `<strong>${info.prop}</strong> - ${info.fecha}`;
+            
+            // Marcar el botón de origen correcto
+            document.querySelectorAll('#edit-ocup-modal .origen-btn').forEach(b => {
+                b.classList.toggle('selected', b.dataset.origen === info.origen);
+            });
+            
+            document.getElementById('edit-ocup-modal').classList.add('show');
+        }
+        
+        async function submitEditOcup() {
+            const id = document.getElementById('edit-ocup-id').value;
+            const precio = parseFloat(document.getElementById('edit-ocup-precio').value);
+            const origen = document.getElementById('edit-ocup-origen').value;
+            const notas = document.getElementById('edit-ocup-notas').value;
+            
+            if (!precio || precio <= 0) { showToast('Ingresá un precio válido', 'error'); return; }
+            if (!origen) { showToast('Seleccioná quién alquiló', 'error'); return; }
+            
+            await fetch(`/api/ocupacion/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ precio, origen, notas })
+            });
+            
+            document.getElementById('edit-ocup-modal').classList.remove('show');
+            loadCalendarioGeneral();
+            loadAll();
+            showToast('Ocupación actualizada', 'success');
+        }
+        
+        async function deleteOcup() {
+            if (!confirm('¿Seguro que querés eliminar esta ocupación?')) return;
+            
+            const propId = document.getElementById('edit-ocup-propid').value;
+            const fecha = document.getElementById('edit-ocup-fecha').value;
+            
+            await fetch(`/api/ocupacion/${propId}/${fecha}`, { method: 'DELETE' });
+            
+            document.getElementById('edit-ocup-modal').classList.remove('show');
+            loadCalendarioGeneral();
+            loadAll();
+            showToast('Ocupación eliminada', 'success');
         }
         
         document.getElementById('ocupacion-form').addEventListener('submit', async (e) => {
@@ -1742,7 +1845,18 @@
                             <span class="merged-detalle">${origenTexto} · ${colspan}n · $${precioTotal}</span>
                         </div>`;
                         
-                        bodyHtml += `<td class="${clase}" colspan="${colspan}" title="${titulo}">${contenido}</td>`;
+                        // Guardar info de la primera ocupación del rango para editar
+                        const ocupInfoStr = encodeURIComponent(JSON.stringify({
+                            id: ocup.id,
+                            propId: propId,
+                            fecha: fechaStr,
+                            precio: ocup.precio,
+                            origen: origenActual,
+                            notas: inquilinoActual,
+                            prop: depto
+                        }));
+                        
+                        bodyHtml += `<td class="${clase}" colspan="${colspan}" title="${titulo}" style="cursor:pointer" onclick="openEditOcup(decodeURIComponent('${ocupInfoStr}'))">${contenido}</td>`;
                         d += colspan;
                     }
                 }
